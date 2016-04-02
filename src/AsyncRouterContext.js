@@ -7,20 +7,32 @@ class AsyncPropsContainer extends Component {
 		store: React.PropTypes.object,
 	};
 
-	state = {};
+	state = { newProps: {}, };
 
-	componentDidMount = () => {
-		const { Component, componentProps } = this.props
-		if (Component.needs)
-			Component.needs(componentProps, this.context.store)
-			.then(newProps => {
-				this.setState(newProps)
-			})
+
+	componentWillReceiveProps = (props) => {
+		
+		if (props.Component == this.props.Component) return
+		
+		const { Component, componentProps } = props
+		this.loadNeeds(Component, componentProps)
+
+	};
+
+	loadNeeds = (Component, componentProps) => {
+		
+		if (!Component.needs) return
+		this.setState({newProps: {},})
+		Promise.resolve(Component.needs(componentProps, this.context.store))
+		.then(newProps => {
+			this.setState({newProps: newProps})
+		})
+
 	};
 
 	render = () => {
 		const { Component, componentProps } = this.props
-		return <Component {...componentProps} {...this.state} />
+		return <Component {...componentProps} {...this.state.newProps} />
 	}
 }
 

@@ -11,6 +11,8 @@ export default function fetchNeeds(params, store) {
   }, []);
 
   const promises = needs.map((need) => {
+    console.log('need: ' + require('util').inspect(need))
+    console.log('store: ' + require('util').inspect(store))
     return need(params, store)
   });
 
