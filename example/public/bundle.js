@@ -89,7 +89,7 @@
 			history: _reactRouter.browserHistory,
 			render: function render(props) {
 				return _react2.default.createElement(_AsyncRouterContext2.default, _extends({}, props, {
-					additionalProps: initialState.asyncProps
+					asyncProps: initialState.asyncProps
 				}));
 			}
 		})
@@ -24793,7 +24793,12 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	exports.default = [_react2.default.createElement(_reactRouter.Route, { path: '/', component: _App2.default }), _react2.default.createElement(_reactRouter.Route, { path: '/cats', component: _Cats2.default }), _react2.default.createElement(_reactRouter.Route, { path: '/dogs', component: _Dogs2.default })];
+	exports.default = _react2.default.createElement(
+		_reactRouter.Route,
+		{ path: '/', component: _App2.default },
+		_react2.default.createElement(_reactRouter.Route, { path: '/cats', component: _Cats2.default }),
+		_react2.default.createElement(_reactRouter.Route, { path: '/dogs', component: _Dogs2.default })
+	);
 
 /***/ },
 /* 217 */
@@ -24849,6 +24854,15 @@
 	        _react2.default.createElement(
 	          'ul',
 	          { role: 'nav' },
+	          _react2.default.createElement(
+	            'li',
+	            null,
+	            _react2.default.createElement(
+	              _reactRouter.Link,
+	              { to: '/' },
+	              'Home'
+	            )
+	          ),
 	          _react2.default.createElement(
 	            'li',
 	            null,
@@ -25450,7 +25464,6 @@
 	  _createClass(Cats, [{
 	    key: 'render',
 	    value: function render() {
-	      //console.log(require('util').inspect(this.props))
 	      return _react2.default.createElement(
 	        'div',
 	        null,
@@ -25555,8 +25568,17 @@
 	  return state;
 	}
 	
+	function dogsReducer() {
+	  var state = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+	  var action = arguments[1];
+	
+	  if (action.type == 'FETCH_DOGS_SUCCESS') return action.response;
+	  return state;
+	}
+	
 	exports.default = (0, _redux.combineReducers)({
-	  cats: catsReducer
+	  cats: catsReducer,
+	  dogs: dogsReducer
 	});
 
 /***/ },
@@ -27069,15 +27091,12 @@
 			}
 	
 			return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(AsyncPropsContainer)).call.apply(_Object$getPrototypeO, [this].concat(args))), _this), _this.state = { newProps: {} }, _this.componentWillReceiveProps = function (props) {
-	
 				if (props.Component == _this.props.Component) return;
-	
 				var Component = props.Component;
 				var componentProps = props.componentProps;
 	
 				_this.loadNeeds(Component, componentProps);
 			}, _this.loadNeeds = function (Component, componentProps) {
-	
 				if (!Component.needs) return;
 				_this.setState({ newProps: {} });
 				Promise.resolve(Component.needs(componentProps, _this.context.store)).then(function (newProps) {
@@ -27114,14 +27133,14 @@
 			}
 	
 			return _ret2 = (_temp2 = (_this2 = _possibleConstructorReturn(this, (_Object$getPrototypeO2 = Object.getPrototypeOf(AsyncRouterContext)).call.apply(_Object$getPrototypeO2, [this].concat(args))), _this2), _this2.render = function () {
-				var props = _this2.props;
-				var additionalProps = props.additionalProps;
-	
+				var asyncProps = _this2.props.asyncProps || [];
+				var i = _this2.props.components.length - 1;
 				return _react2.default.createElement(_reactRouter.RouterContext, _extends({}, _this2.props, {
 					createElement: function createElement(Component, props) {
+						var iAsyncProps = asyncProps[i--] || {};
 						return _react2.default.createElement(AsyncPropsContainer, {
 							Component: Component,
-							componentProps: _extends({}, props, additionalProps)
+							componentProps: _extends({}, props, iAsyncProps)
 						});
 					}
 				}));
@@ -51742,7 +51761,7 @@
 	      }
 	
 	      if (!shouldCallAPI(getState())) {
-	        return Promise.resolve();
+	        return Promise.resolve({});
 	      }
 	
 	      var _types = _slicedToArray(types, 3);

@@ -25,7 +25,9 @@ function callAPIMiddleware({ dispatch, getState }) {
     }
 
     if (!shouldCallAPI(getState())) {
-      return Promise.resolve()
+      // Returning an object here so that the dispatch call will carry on
+      // and return a Promise, as we may have code to execute later
+      return Promise.resolve({})
     }
 
     const [ requestType, successType, failureType ] = types

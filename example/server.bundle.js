@@ -89,15 +89,15 @@
 
 	var _fetchNeeds2 = _interopRequireDefault(_fetchNeeds);
 
-	var _AsyncRouterContext = __webpack_require__(18);
+	var _AsyncRouterContext = __webpack_require__(17);
 
 	var _AsyncRouterContext2 = _interopRequireDefault(_AsyncRouterContext);
 
-	var _callAPIMiddleware = __webpack_require__(19);
+	var _callAPIMiddleware = __webpack_require__(18);
 
 	var _callAPIMiddleware2 = _interopRequireDefault(_callAPIMiddleware);
 
-	var _index = __webpack_require__(20);
+	var _index = __webpack_require__(19);
 
 	var _index2 = _interopRequireDefault(_index);
 
@@ -125,9 +125,12 @@
 	    // server our app is stateless, so we need to use `match` to
 	    // get these props before rendering.
 
-	    (0, _fetchNeeds2.default)(props, store).then(function (asyncProps) {
-	      console.log(__webpack_require__(17).inspect(asyncProps));
-	      //console.log('props: ' + require('util').inspect(props))
+	    (0, _fetchNeeds2.default)(props, store)
+	    /**
+	     * asyncProps will be an array here, one props object for each route
+	     * that matches the current location, i.e. nested routes.
+	     */
+	    .then(function (asyncProps) {
 	      // Have to do the render after needs are fetched else we won't have the
 	      // returned props
 	      // We can't use the standard RouterContext because it filters out which
@@ -137,16 +140,17 @@
 	      var appHtml = (0, _server.renderToString)(_react2.default.createElement(
 	        _reactRedux.Provider,
 	        { store: store },
-	        _react2.default.createElement(_AsyncRouterContext2.default, _extends({}, props, { additionalProps: asyncProps }))
+	        _react2.default.createElement(_AsyncRouterContext2.default, _extends({}, props, { asyncProps: asyncProps }))
 	      ));
 
 	      // dump the HTML into a template, lots of ways to do this, but none are
 	      // really influenced by React Router
-	      var html = __webpack_require__(23);
+	      var html = __webpack_require__(22);
 	      html = html.replace('<!--__APP_HTML__-->', appHtml);
 
 	      var initialState = { asyncProps: asyncProps, store: store.getState() };
 	      html = html.replace('{/*__INITIAL_STATE__*/}', JSON.stringify(initialState));
+
 	      res.send(html);
 	    });
 	  });
@@ -220,7 +224,12 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	exports.default = [_react2.default.createElement(_reactRouter.Route, { path: '/', component: _App2.default }), _react2.default.createElement(_reactRouter.Route, { path: '/cats', component: _Cats2.default }), _react2.default.createElement(_reactRouter.Route, { path: '/dogs', component: _Dogs2.default })];
+	exports.default = _react2.default.createElement(
+		_reactRouter.Route,
+		{ path: '/', component: _App2.default },
+		_react2.default.createElement(_reactRouter.Route, { path: '/cats', component: _Cats2.default }),
+		_react2.default.createElement(_reactRouter.Route, { path: '/dogs', component: _Dogs2.default })
+	);
 
 /***/ },
 /* 7 */
@@ -276,6 +285,15 @@
 	        _react2.default.createElement(
 	          'ul',
 	          { role: 'nav' },
+	          _react2.default.createElement(
+	            'li',
+	            null,
+	            _react2.default.createElement(
+	              _reactRouter.Link,
+	              { to: '/' },
+	              'Home'
+	            )
+	          ),
 	          _react2.default.createElement(
 	            'li',
 	            null,
@@ -476,7 +494,6 @@
 	  _createClass(Cats, [{
 	    key: 'render',
 	    value: function render() {
-	      //console.log(require('util').inspect(this.props))
 	      return _react2.default.createElement(
 	        'div',
 	        null,
@@ -593,15 +610,24 @@
 	  return state;
 	}
 
+	function dogsReducer() {
+	  var state = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+	  var action = arguments[1];
+
+	  if (action.type == 'FETCH_DOGS_SUCCESS') return action.response;
+	  return state;
+	}
+
 	exports.default = (0, _redux.combineReducers)({
-	  cats: catsReducer
+	  cats: catsReducer,
+	  dogs: dogsReducer
 	});
 
 /***/ },
 /* 16 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	'use strict';
+	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
@@ -613,35 +639,20 @@
 
 	  var needs = [];
 	  components.forEach(function (c) {
-	    if (c.needs) {
-	      needs.push(c.needs);
-	    }
+	    return needs.push(c.needs || null);
 	  }, []);
 
 	  var promises = needs.map(function (need) {
-	    console.log('need: ' + __webpack_require__(17).inspect(need));
-	    console.log('store: ' + __webpack_require__(17).inspect(store));
+	    if (!need) return Promise.resolve(need);
 	    return need(params, store);
 	  });
 
-	  return Promise.all(promises).then(function (allNewProps) {
-	    var newProps = {};
-	    allNewProps.forEach(function (props) {
-	      return Object.assign(newProps, props);
-	    });
-	    return newProps;
-	  });
+	  return Promise.all(promises);
 	}
 	module.exports = exports['default'];
 
 /***/ },
 /* 17 */
-/***/ function(module, exports) {
-
-	module.exports = require("util");
-
-/***/ },
-/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -705,15 +716,12 @@
 			}
 
 			return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(AsyncPropsContainer)).call.apply(_Object$getPrototypeO, [this].concat(args))), _this), _this.state = { newProps: {} }, _this.componentWillReceiveProps = function (props) {
-
 				if (props.Component == _this.props.Component) return;
-
 				var Component = props.Component;
 				var componentProps = props.componentProps;
 
 				_this.loadNeeds(Component, componentProps);
 			}, _this.loadNeeds = function (Component, componentProps) {
-
 				if (!Component.needs) return;
 				_this.setState({ newProps: {} });
 				Promise.resolve(Component.needs(componentProps, _this.context.store)).then(function (newProps) {
@@ -750,14 +758,14 @@
 			}
 
 			return _ret2 = (_temp2 = (_this2 = _possibleConstructorReturn(this, (_Object$getPrototypeO2 = Object.getPrototypeOf(AsyncRouterContext)).call.apply(_Object$getPrototypeO2, [this].concat(args))), _this2), _this2.render = function () {
-				var props = _this2.props;
-				var additionalProps = props.additionalProps;
-
+				var asyncProps = _this2.props.asyncProps || [];
+				var i = _this2.props.components.length - 1;
 				return _react2.default.createElement(_reactRouter.RouterContext, _extends({}, _this2.props, {
 					createElement: function createElement(Component, props) {
+						var iAsyncProps = asyncProps[i--] || {};
 						return _react2.default.createElement(AsyncPropsContainer, {
 							Component: Component,
-							componentProps: _extends({}, props, additionalProps)
+							componentProps: _extends({}, props, iAsyncProps)
 						});
 					}
 				}));
@@ -773,7 +781,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 19 */
+/* 18 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -816,7 +824,7 @@
 	      }
 
 	      if (!shouldCallAPI(getState())) {
-	        return Promise.resolve();
+	        return Promise.resolve({});
 	      }
 
 	      var _types = _slicedToArray(types, 3);
@@ -850,7 +858,7 @@
 	exports.default = callAPIMiddleware;
 
 /***/ },
-/* 20 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -866,8 +874,34 @@
 	  next();
 	});
 
-	router.use('/cats', __webpack_require__(21));
-	router.use('/dogs', __webpack_require__(22));
+	router.use('/cats', __webpack_require__(20));
+	router.use('/dogs', __webpack_require__(21));
+
+	module.exports = router;
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _express = __webpack_require__(1);
+
+	var router = new _express.Router();
+	var cats = [{
+	  name: 'British Shorthair',
+	  description: 'The British Shorthair is the pedigreed version of the traditional British domestic cat, with a distinctively chunky body, dense coat and broad face.'
+	}, {
+	  name: 'Siamese cat',
+	  description: 'The Siamese cat is one of the first distinctly recognized breeds of Oriental cat. One of several breeds native to Thailand, the Siamese cat became one of the most popular breeds in Europe and North America in the 20th century.'
+	}, {
+	  name: 'Persian cat',
+	  description: 'The Persian cat is a long-haired breed of cat characterized by its round face and short muzzle. In Britain, it is sometimes called the Longhair or Persian Longhair. It is also known as the Shiraz or Shirazi, particularly in the Middle East.'
+	}];
+
+	router.get('/', function (req, res, next) {
+	  res.status(200).send(cats);
+	});
 
 	module.exports = router;
 
@@ -880,45 +914,25 @@
 	var _express = __webpack_require__(1);
 
 	var router = new _express.Router();
-	var cats = [{
-	  name: 'Fluffy',
-	  description: 'Fluffy is a pretty fluffy cat, she likes to be groomed.'
+	var dogs = [{
+	  name: 'Labrador Retriever',
+	  description: 'The Labrador Retriever, also Labrador, is a type of retriever-gun dog. The Labrador is one of the most popular breeds of dog in the United Kingdom and the United States.'
 	}, {
-	  name: 'Spike',
-	  decription: 'Spike is very playful and enjoys playing with toys.'
+	  name: 'German Shepherd',
+	  description: 'The German Shepherd is a breed of medium to large-sized working dog that originated in Germany. The breed\'s officially recognized name is German Shepherd Dog in the English language, sometimes abbreviated'
+	}, {
+	  name: 'Bulldog',
+	  description: 'The Bulldog is a medium-sized breed of dog commonly referred to as the English Bulldog or British Bulldog. Other Bulldog breeds include the American Bulldog, Old English Bulldog, Leavitt Bulldog, Olde English Bulldogge, and the French Bulldog.'
 	}];
 
 	router.get('/', function (req, res, next) {
-	  res.status(200).send(cats);
+	  res.status(200).send(dogs);
 	});
 
 	module.exports = router;
 
 /***/ },
 /* 22 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _express = __webpack_require__(1);
-
-	var router = new _express.Router();
-	var cats = [{
-	  name: 'Rex',
-	  description: 'Rex means business, a very serious dog. Would make a good guard dog.'
-	}, {
-	  name: 'K9',
-	  decription: 'Happy go lucky dog. Always in a good mood.'
-	}];
-
-	router.get('/', function (req, res, next) {
-	  res.status(200).send(cats);
-	});
-
-	module.exports = router;
-
-/***/ },
-/* 23 */
 /***/ function(module, exports) {
 
 	module.exports = "<!DOCTYPE html>\n<html>\n<meta charset=\"utf-8\" />\n<title>React Router Redux Async Props Example</title>\n<div id=\"app\"><!--__APP_HTML__--></div>\n<script>\n  window.__INITIAL_STATE__ = {/*__INITIAL_STATE__*/}\n</script>\n<script src=\"bundle.js\"></script>"

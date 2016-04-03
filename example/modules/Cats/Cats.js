@@ -8,8 +8,7 @@ class Cats extends Component {
 	};
 
   render() {
-  	//console.log(require('util').inspect(this.props))
-    return <div>
+  	return <div>
     	<h1>Cats</h1>
     	{this.props.cats.map(cat => {
     		return <div>

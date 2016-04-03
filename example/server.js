@@ -41,9 +41,11 @@ app.get('*', function (req, res, next) {
 
 
     fetchNeeds(props, store)
+    /**
+     * asyncProps will be an array here, one props object for each route
+     * that matches the current location, i.e. nested routes.
+     */
     .then((asyncProps) => {
-    	console.log(require('util').inspect(asyncProps))
-    	//console.log('props: ' + require('util').inspect(props))
     	// Have to do the render after needs are fetched else we won't have the
     	// returned props
     	// We can't use the standard RouterContext because it filters out which
@@ -52,7 +54,7 @@ app.get('*', function (req, res, next) {
     	// async props.
 	    const appHtml = renderToString(
 	  		<Provider store={store}>
-	  			<AsyncRouterContext {...props} additionalProps={asyncProps} />
+	  			<AsyncRouterContext {...props} asyncProps={asyncProps} />
 				</Provider>
 			)
 	    
@@ -63,6 +65,7 @@ app.get('*', function (req, res, next) {
 
 	    const initialState = {asyncProps, store: store.getState()}
 	    html = html.replace('{/*__INITIAL_STATE__*/}', JSON.stringify(initialState))
+	    
 	    res.send(html)
     })
   })

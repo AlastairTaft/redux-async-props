@@ -9,6 +9,7 @@ export default class App extends Component {
     	<h5>A simple async props example.</h5>
 
     	<ul role="nav">
+        <li><Link to="/">Home</Link></li>
         <li><Link to="/cats">Cats</Link></li>
         <li><Link to="/dogs">Dogs</Link></li>
       </ul>

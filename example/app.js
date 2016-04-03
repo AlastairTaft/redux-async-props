@@ -22,7 +22,7 @@ render((
 	  	history={browserHistory}
 			render={(props) => <AsyncRouterContext 
 				{...props} 
-				additionalProps={initialState.asyncProps}
+				asyncProps={initialState.asyncProps}
 			/>}
 		/>
 	</Provider>
