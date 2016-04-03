@@ -20,14 +20,14 @@ class Cats extends Component {
   }
 }
 
-Cats.needs = (props, store) => {
-	return store.dispatch(fetchCats())
+Cats.needs = (props, store) => 
+	store.dispatch(fetchCats())
 	.then(() => {
 		var state = store.getState()
 		return {
 			cats: state.cats,
 		}
 	})
-}
+
 
 export default Cats

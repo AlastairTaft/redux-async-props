@@ -716,6 +716,7 @@
 			}
 
 			return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(AsyncPropsContainer)).call.apply(_Object$getPrototypeO, [this].concat(args))), _this), _this.state = { newProps: {} }, _this.componentWillReceiveProps = function (props) {
+				debugger;
 				if (props.Component == _this.props.Component) return;
 				var Component = props.Component;
 				var componentProps = props.componentProps;
@@ -728,6 +729,7 @@
 					_this.setState({ newProps: newProps });
 				});
 			}, _this.render = function () {
+				debugger;
 				var _this$props = _this.props;
 				var Component = _this$props.Component;
 				var componentProps = _this$props.componentProps;
@@ -762,6 +764,7 @@
 				var i = _this2.props.components.length - 1;
 				return _react2.default.createElement(_reactRouter.RouterContext, _extends({}, _this2.props, {
 					createElement: function createElement(Component, props) {
+						debugger;
 						var iAsyncProps = asyncProps[i--] || {};
 						return _react2.default.createElement(AsyncPropsContainer, {
 							Component: Component,

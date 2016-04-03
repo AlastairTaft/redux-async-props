@@ -10,6 +10,7 @@ class AsyncPropsContainer extends Component {
 	state = { newProps: {}, };
 
 	componentWillReceiveProps = (props) => {
+		debugger
 		if (props.Component == this.props.Component) return		
 		const { Component, componentProps } = props
 		this.loadNeeds(Component, componentProps)
@@ -25,6 +26,7 @@ class AsyncPropsContainer extends Component {
 	};
 
 	render = () => {
+		debugger
 		const { Component, componentProps } = this.props
 		return <Component {...componentProps} {...this.state.newProps} />
 	}
@@ -36,6 +38,7 @@ class AsyncRouterContext extends Component {
 		var i = this.props.components.length - 1
 		return <RouterContext {...this.props} 
 			createElement={(Component, props) => {
+					debugger
 					var iAsyncProps = asyncProps[i--] || {}
 	  			return <AsyncPropsContainer 
 	  				Component={Component} 

@@ -153,3 +153,13 @@ Your asynchronous actions have to run on both the client and server.
 If your using `fetch` commands then 'isomorphic-fetch' is a good way to ensure
 it works on the server too.
 
+# Usage with react-redux
+It's safe to use with the `connect` decorator as this can just be used as a way
+to pre-populate the redux store. Then you can use connect to map the store's 
+state to props if you so wish.
+
+# TODO
+  - Invalidate the async props after initial render so they don't get used when a user navigates to a new page.
+  - Fire the fetchNeeds when a new component is mounted on the client (i.e. user changes route)
+
+
