@@ -824,6 +824,8 @@
 	      }
 
 	      if (!shouldCallAPI(getState())) {
+	        // Returning an object here so that the dispatch call will carry on
+	        // and return a Promise, as we may have code to execute later
 	        return Promise.resolve({});
 	      }
 
