@@ -31,7 +31,7 @@ Any redux actions you dispatch here will also populate your redux store, which m
 
 You'll need to configure your server and client. See the next steps below, the steps assume you're familiar with how to setup `redux` and `react-router`, if you're new to these two packages it might be best to start with their tutorials first.
 
-## Configuring the server.
+## Configuring the server
 
 ```js
 import { fetchNeeds, AsyncRoutingContext } from 'redux-async-props'
