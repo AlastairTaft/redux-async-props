@@ -1,6 +1,6 @@
 {
   "name": "redux-async-props",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Load props and state asynchonously with react-router and redux",
   "keywords": "redux, react-router, async, props, connect",
   "main": "lib/index.js",
