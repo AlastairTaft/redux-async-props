@@ -10,11 +10,11 @@
   },
   "bugs": { 
   	"url" : "https://github.com/AlastairTaft/redux-async-props/issues",
-		"email" : "alastair@fleep.io",
+		"email" : "alastair@fleep.io"
 	},
 	"author": { 
 		"name" : "Alastair Taft",
-		"email" : "alastair@fleep.io",
+		"email" : "alastair@fleep.io"
 	},
 	"repository" : { 
 		"type" : "git",
