@@ -1,6 +1,6 @@
 {
   "name": "redux-async-props",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Fetch async redux state on the client and server",
   "keywords": "redux, connect, async, props",
   "main": "lib/index.js",
