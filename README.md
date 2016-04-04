@@ -45,20 +45,23 @@ subsitutes that html into a file template along with adding the redux state
 into the template so it can be hydrated on load. 
 
 ```javascript
-const store = createStore(reducer)
+match({ routes: routes, location: req.url }, (err, redirect, props) => {
 
-const appHtml = renderToString(
-	<Provider>
-		<App {...props}/>
-	</Provider>
-)
-// dump the HTML into a template, lots of ways to do this, we're just using
-// webpack's raw-loader
-var html = require("raw!./index.template.html")
-html = html.replace('__APP_HTML__', appHtml)
-// dump the redux state into the html
-html = html.replace('$__INITIAL_STATE__', JSON.stringify(store.getState()))
-res.send(html)
+	const store = createStore(reducer)
+
+	const appHtml = renderToString(
+		<Provider>
+			<App {...props}/>
+		</Provider>
+	)
+	// dump the HTML into a template, lots of ways to do this, we're just using
+	// webpack's raw-loader
+	var html = require("raw!./index.template.html")
+	html = html.replace('__APP_HTML__', appHtml)
+	// dump the redux state into the html
+	html = html.replace('$__INITIAL_STATE__', JSON.stringify(store.getState()))
+	res.send(html)
+})
 ```
 
 We need to extend this to populate the redux initial state with everything each
@@ -75,24 +78,29 @@ We'll then add an asynchronous step to that last part of that code before
 sending our html response.
 
 ```javascript
-fetchNeeds(props, store)
-.then((asyncProps) => {
-	const appHtml = renderToString(
-  		<Provider store={store}>
-  			<AsyncRouterContext {...props} asyncProps={asyncProps} />
-		</Provider>
-	)
-    
-    	var html = require("raw!./public/index.html")
-    	html = html.replace('<!--__APP_HTML__-->', appHtml)
+match({ routes: routes, location: req.url }, (err, redirect, props) => {
 
-	// This bit is slightly different, we need to persist the props we've 
-	// already fetched on the server so we don't have to run the needs function
-	// again on the initial load.
-	const initialState = {asyncProps, store: store.getState()}
-	html = html.replace('{/*__INITIAL_STATE__*/}', JSON.stringify(initialState))
-	
-	res.send(html)
+	const store = createStore(reducer, applyMiddleware(callAPIMiddleware))
+
+	fetchNeeds(props, store)
+	.then((asyncProps) => {
+		const appHtml = renderToString(
+	  		<Provider store={store}>
+	  			<AsyncRouterContext {...props} asyncProps={asyncProps} />
+			</Provider>
+		)
+	    
+	    	var html = require("raw!./public/index.html")
+	    	html = html.replace('<!--__APP_HTML__-->', appHtml)
+
+		// This bit is slightly different, we need to persist the props we've 
+		// already fetched on the server so we don't have to run the needs function
+		// again on the initial load.
+		const initialState = {asyncProps, store: store.getState()}
+		html = html.replace('{/*__INITIAL_STATE__*/}', JSON.stringify(initialState))
+		
+		res.send(html)
+	})
 })
 ```
 

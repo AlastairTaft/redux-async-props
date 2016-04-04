@@ -93,11 +93,11 @@
 
 	var _AsyncRouterContext2 = _interopRequireDefault(_AsyncRouterContext);
 
-	var _callAPIMiddleware = __webpack_require__(18);
+	var _callAPIMiddleware = __webpack_require__(21);
 
 	var _callAPIMiddleware2 = _interopRequireDefault(_callAPIMiddleware);
 
-	var _index = __webpack_require__(19);
+	var _index = __webpack_require__(22);
 
 	var _index2 = _interopRequireDefault(_index);
 
@@ -145,7 +145,7 @@
 
 	      // dump the HTML into a template, lots of ways to do this, but none are
 	      // really influenced by React Router
-	      var html = __webpack_require__(22);
+	      var html = __webpack_require__(25);
 	      html = html.replace('<!--__APP_HTML__-->', appHtml);
 
 	      var initialState = { asyncProps: asyncProps, store: store.getState() };
@@ -679,6 +679,10 @@
 
 	var _reactRouter = __webpack_require__(5);
 
+	var _getRouteParams = __webpack_require__(18);
+
+	var _getRouteParams2 = _interopRequireDefault(_getRouteParams);
+
 	function _interopRequireDefault(obj) {
 		return obj && obj.__esModule ? obj : { default: obj };
 	}
@@ -715,12 +719,17 @@
 				args[_key] = arguments[_key];
 			}
 
-			return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(AsyncPropsContainer)).call.apply(_Object$getPrototypeO, [this].concat(args))), _this), _this.state = { newProps: {} }, _this.componentWillReceiveProps = function (props) {
-				debugger;
-				if (props.Component == _this.props.Component) return;
+			return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(AsyncPropsContainer)).call.apply(_Object$getPrototypeO, [this].concat(args))), _this), _this.state = { newProps: {} }, _this.componentWillMount = function () {
+				return _this.onComponentLoad(_this.props);
+			}, _this.componentWillReceiveProps = function (props) {
+				return _this.onComponentLoad(props);
+			}, _this.onComponentLoad = function (props) {
 				var Component = props.Component;
 				var componentProps = props.componentProps;
+				var asyncProps = props.asyncProps;
+				// If there is asyncProps don't load needs as this is the initial render
 
+				if (asyncProps) return;
 				_this.loadNeeds(Component, componentProps);
 			}, _this.loadNeeds = function (Component, componentProps) {
 				if (!Component.needs) return;
@@ -729,12 +738,12 @@
 					_this.setState({ newProps: newProps });
 				});
 			}, _this.render = function () {
-				debugger;
 				var _this$props = _this.props;
 				var Component = _this$props.Component;
 				var componentProps = _this$props.componentProps;
+				var asyncProps = _this$props.asyncProps;
 
-				return _react2.default.createElement(Component, _extends({}, componentProps, _this.state.newProps));
+				return _react2.default.createElement(Component, _extends({}, componentProps, asyncProps, _this.state.newProps));
 			}, _temp), _possibleConstructorReturn(_this, _ret);
 		}
 
@@ -748,35 +757,43 @@
 	var AsyncRouterContext = function (_Component2) {
 		_inherits(AsyncRouterContext, _Component2);
 
-		function AsyncRouterContext() {
-			var _Object$getPrototypeO2;
-
-			var _temp2, _this2, _ret2;
-
+		function AsyncRouterContext(props) {
 			_classCallCheck(this, AsyncRouterContext);
 
-			for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-				args[_key2] = arguments[_key2];
-			}
+			var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(AsyncRouterContext).call(this, props));
 
-			return _ret2 = (_temp2 = (_this2 = _possibleConstructorReturn(this, (_Object$getPrototypeO2 = Object.getPrototypeOf(AsyncRouterContext)).call.apply(_Object$getPrototypeO2, [this].concat(args))), _this2), _this2.render = function () {
-				var asyncProps = _this2.props.asyncProps || [];
-				var i = _this2.props.components.length - 1;
-				return _react2.default.createElement(_reactRouter.RouterContext, _extends({}, _this2.props, {
-					createElement: function createElement(Component, props) {
-						debugger;
-						var iAsyncProps = asyncProps[i--] || {};
-						return _react2.default.createElement(AsyncPropsContainer, {
-							Component: Component,
-							componentProps: _extends({}, props, iAsyncProps)
-						});
-					}
-				}));
-			}, _temp2), _possibleConstructorReturn(_this2, _ret2);
+			_initialiseProps.call(_this2);
+
+			_this2.asyncProps = props.asyncProps;
+			return _this2;
 		}
 
 		return AsyncRouterContext;
 	}(_react.Component);
+
+	var _initialiseProps = function _initialiseProps() {
+		var _this3 = this;
+
+		this.componentDidMount = function () {
+			// Clear out the asyncProps, as we only want these to be used on the
+			// initial render
+			_this3.asyncProps = null;
+		};
+
+		this.render = function () {
+			var asyncProps = _this3.asyncProps;
+			var i = _this3.props.components.length - 1;
+			return _react2.default.createElement(_reactRouter.RouterContext, _extends({}, _this3.props, {
+				createElement: function createElement(Component, props) {
+					return _react2.default.createElement(AsyncPropsContainer, {
+						Component: Component,
+						componentProps: props,
+						asyncProps: asyncProps != null ? asyncProps[i--] || {} : null
+					});
+				}
+			}));
+		};
+	};
 
 	;
 
@@ -785,6 +802,273 @@
 
 /***/ },
 /* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	exports.__esModule = true;
+
+	var _PatternUtils = __webpack_require__(19);
+
+	/**
+	 * Extracts an object of params the given route cares about from
+	 * the given params object.
+	 */
+	function getRouteParams(route, params) {
+	  var routeParams = {};
+
+	  if (!route.path) return routeParams;
+
+	  var paramNames = _PatternUtils.getParamNames(route.path);
+
+	  for (var p in params) {
+	    if (params.hasOwnProperty(p) && paramNames.indexOf(p) !== -1) routeParams[p] = params[p];
+	  }return routeParams;
+	}
+
+	exports['default'] = getRouteParams;
+	module.exports = exports['default'];
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	exports.__esModule = true;
+	exports.compilePattern = compilePattern;
+	exports.matchPattern = matchPattern;
+	exports.getParamNames = getParamNames;
+	exports.getParams = getParams;
+	exports.formatPattern = formatPattern;
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+	var _invariant = __webpack_require__(20);
+
+	var _invariant2 = _interopRequireDefault(_invariant);
+
+	function escapeRegExp(string) {
+	  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	}
+
+	function escapeSource(string) {
+	  return escapeRegExp(string).replace(/\/+/g, '/+');
+	}
+
+	function _compilePattern(pattern) {
+	  var regexpSource = '';
+	  var paramNames = [];
+	  var tokens = [];
+
+	  var match = undefined,
+	      lastIndex = 0,
+	      matcher = /:([a-zA-Z_$][a-zA-Z0-9_$]*)|\*\*|\*|\(|\)/g;
+	  while (match = matcher.exec(pattern)) {
+	    if (match.index !== lastIndex) {
+	      tokens.push(pattern.slice(lastIndex, match.index));
+	      regexpSource += escapeSource(pattern.slice(lastIndex, match.index));
+	    }
+
+	    if (match[1]) {
+	      regexpSource += '([^/?#]+)';
+	      paramNames.push(match[1]);
+	    } else if (match[0] === '**') {
+	      regexpSource += '([\\s\\S]*)';
+	      paramNames.push('splat');
+	    } else if (match[0] === '*') {
+	      regexpSource += '([\\s\\S]*?)';
+	      paramNames.push('splat');
+	    } else if (match[0] === '(') {
+	      regexpSource += '(?:';
+	    } else if (match[0] === ')') {
+	      regexpSource += ')?';
+	    }
+
+	    tokens.push(match[0]);
+
+	    lastIndex = matcher.lastIndex;
+	  }
+
+	  if (lastIndex !== pattern.length) {
+	    tokens.push(pattern.slice(lastIndex, pattern.length));
+	    regexpSource += escapeSource(pattern.slice(lastIndex, pattern.length));
+	  }
+
+	  return {
+	    pattern: pattern,
+	    regexpSource: regexpSource,
+	    paramNames: paramNames,
+	    tokens: tokens
+	  };
+	}
+
+	var CompiledPatternsCache = {};
+
+	function compilePattern(pattern) {
+	  if (!(pattern in CompiledPatternsCache)) CompiledPatternsCache[pattern] = _compilePattern(pattern);
+
+	  return CompiledPatternsCache[pattern];
+	}
+
+	/**
+	 * Attempts to match a pattern on the given pathname. Patterns may use
+	 * the following special characters:
+	 *
+	 * - :paramName     Matches a URL segment up to the next /, ?, or #. The
+	 *                  captured string is considered a "param"
+	 * - ()             Wraps a segment of the URL that is optional
+	 * - *              Consumes (non-greedy) all characters up to the next
+	 *                  character in the pattern, or to the end of the URL if
+	 *                  there is none
+	 * - **             Consumes (greedy) all characters up to the next character
+	 *                  in the pattern, or to the end of the URL if there is none
+	 *
+	 * The return value is an object with the following properties:
+	 *
+	 * - remainingPathname
+	 * - paramNames
+	 * - paramValues
+	 */
+
+	function matchPattern(pattern, pathname) {
+	  // Make leading slashes consistent between pattern and pathname.
+	  if (pattern.charAt(0) !== '/') {
+	    pattern = '/' + pattern;
+	  }
+	  if (pathname.charAt(0) !== '/') {
+	    pathname = '/' + pathname;
+	  }
+
+	  var _compilePattern2 = compilePattern(pattern);
+
+	  var regexpSource = _compilePattern2.regexpSource;
+	  var paramNames = _compilePattern2.paramNames;
+	  var tokens = _compilePattern2.tokens;
+
+	  regexpSource += '/*'; // Capture path separators
+
+	  // Special-case patterns like '*' for catch-all routes.
+	  var captureRemaining = tokens[tokens.length - 1] !== '*';
+
+	  if (captureRemaining) {
+	    // This will match newlines in the remaining path.
+	    regexpSource += '([\\s\\S]*?)';
+	  }
+
+	  var match = pathname.match(new RegExp('^' + regexpSource + '$', 'i'));
+
+	  var remainingPathname = undefined,
+	      paramValues = undefined;
+	  if (match != null) {
+	    if (captureRemaining) {
+	      remainingPathname = match.pop();
+	      var matchedPath = match[0].substr(0, match[0].length - remainingPathname.length);
+
+	      // If we didn't match the entire pathname, then make sure that the match
+	      // we did get ends at a path separator (potentially the one we added
+	      // above at the beginning of the path, if the actual match was empty).
+	      if (remainingPathname && matchedPath.charAt(matchedPath.length - 1) !== '/') {
+	        return {
+	          remainingPathname: null,
+	          paramNames: paramNames,
+	          paramValues: null
+	        };
+	      }
+	    } else {
+	      // If this matched at all, then the match was the entire pathname.
+	      remainingPathname = '';
+	    }
+
+	    paramValues = match.slice(1).map(function (v) {
+	      return v != null ? decodeURIComponent(v) : v;
+	    });
+	  } else {
+	    remainingPathname = paramValues = null;
+	  }
+
+	  return {
+	    remainingPathname: remainingPathname,
+	    paramNames: paramNames,
+	    paramValues: paramValues
+	  };
+	}
+
+	function getParamNames(pattern) {
+	  return compilePattern(pattern).paramNames;
+	}
+
+	function getParams(pattern, pathname) {
+	  var _matchPattern = matchPattern(pattern, pathname);
+
+	  var paramNames = _matchPattern.paramNames;
+	  var paramValues = _matchPattern.paramValues;
+
+	  if (paramValues != null) {
+	    return paramNames.reduce(function (memo, paramName, index) {
+	      memo[paramName] = paramValues[index];
+	      return memo;
+	    }, {});
+	  }
+
+	  return null;
+	}
+
+	/**
+	 * Returns a version of the given pattern with params interpolated. Throws
+	 * if there is a dynamic segment of the pattern for which there is no param.
+	 */
+
+	function formatPattern(pattern, params) {
+	  params = params || {};
+
+	  var _compilePattern3 = compilePattern(pattern);
+
+	  var tokens = _compilePattern3.tokens;
+
+	  var parenCount = 0,
+	      pathname = '',
+	      splatIndex = 0;
+
+	  var token = undefined,
+	      paramName = undefined,
+	      paramValue = undefined;
+	  for (var i = 0, len = tokens.length; i < len; ++i) {
+	    token = tokens[i];
+
+	    if (token === '*' || token === '**') {
+	      paramValue = Array.isArray(params.splat) ? params.splat[splatIndex++] : params.splat;
+
+	      !(paramValue != null || parenCount > 0) ? process.env.NODE_ENV !== 'production' ? _invariant2['default'](false, 'Missing splat #%s for path "%s"', splatIndex, pattern) : _invariant2['default'](false) : undefined;
+
+	      if (paramValue != null) pathname += encodeURI(paramValue);
+	    } else if (token === '(') {
+	      parenCount += 1;
+	    } else if (token === ')') {
+	      parenCount -= 1;
+	    } else if (token.charAt(0) === ':') {
+	      paramName = token.substring(1);
+	      paramValue = params[paramName];
+
+	      !(paramValue != null || parenCount > 0) ? process.env.NODE_ENV !== 'production' ? _invariant2['default'](false, 'Missing "%s" parameter for path "%s"', paramName, pattern) : _invariant2['default'](false) : undefined;
+
+	      if (paramValue != null) pathname += encodeURIComponent(paramValue);
+	    } else {
+	      pathname += token;
+	    }
+	  }
+
+	  return pathname.replace(/\/+/g, '/');
+	}
+
+/***/ },
+/* 20 */
+/***/ function(module, exports) {
+
+	module.exports = require("invariant");
+
+/***/ },
+/* 21 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -863,7 +1147,7 @@
 	exports.default = callAPIMiddleware;
 
 /***/ },
-/* 19 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -879,13 +1163,13 @@
 	  next();
 	});
 
-	router.use('/cats', __webpack_require__(20));
-	router.use('/dogs', __webpack_require__(21));
+	router.use('/cats', __webpack_require__(23));
+	router.use('/dogs', __webpack_require__(24));
 
 	module.exports = router;
 
 /***/ },
-/* 20 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -911,7 +1195,7 @@
 	module.exports = router;
 
 /***/ },
-/* 21 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -937,7 +1221,7 @@
 	module.exports = router;
 
 /***/ },
-/* 22 */
+/* 25 */
 /***/ function(module, exports) {
 
 	module.exports = "<!DOCTYPE html>\n<html>\n<meta charset=\"utf-8\" />\n<title>React Router Redux Async Props Example</title>\n<div id=\"app\"><!--__APP_HTML__--></div>\n<script>\n  window.__INITIAL_STATE__ = {/*__INITIAL_STATE__*/}\n</script>\n<script src=\"bundle.js\"></script>"

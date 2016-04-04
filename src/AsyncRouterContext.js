@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { RouterContext } from 'react-router'
+import getRouteParams from 'react-router/lib/getRouteParams'
 
 class AsyncPropsContainer extends Component {
 	
@@ -9,10 +10,14 @@ class AsyncPropsContainer extends Component {
 
 	state = { newProps: {}, };
 
-	componentWillReceiveProps = (props) => {
-		debugger
-		if (props.Component == this.props.Component) return		
-		const { Component, componentProps } = props
+	componentWillMount = () => this.onComponentLoad(this.props);
+
+	componentWillReceiveProps = props => this.onComponentLoad(props);
+
+	onComponentLoad = (props) => {
+		const { Component, componentProps, asyncProps } = props
+		// If there is asyncProps don't load needs as this is the initial render
+		if (asyncProps) return
 		this.loadNeeds(Component, componentProps)
 	};
 
@@ -26,26 +31,34 @@ class AsyncPropsContainer extends Component {
 	};
 
 	render = () => {
-		debugger
-		const { Component, componentProps } = this.props
-		return <Component {...componentProps} {...this.state.newProps} />
+		const { Component, componentProps, asyncProps } = this.props
+		return <Component {...componentProps} {...asyncProps} {...this.state.newProps} />
 	}
 }
 
 class AsyncRouterContext extends Component {
+
+	constructor(props){
+		super(props)
+
+		this.asyncProps = props.asyncProps
+	};
+
+	componentDidMount = () => {
+		// Clear out the asyncProps, as we only want these to be used on the 
+		// initial render
+		this.asyncProps = null
+	};
+
 	render = () => {
-		var asyncProps = this.props.asyncProps || []
+		var asyncProps = this.asyncProps
 		var i = this.props.components.length - 1
 		return <RouterContext {...this.props} 
 			createElement={(Component, props) => {
-					debugger
-					var iAsyncProps = asyncProps[i--] || {}
-	  			return <AsyncPropsContainer 
+					return <AsyncPropsContainer 
 	  				Component={Component} 
-	  				componentProps={{
-	  					...props,
-	  					...iAsyncProps,
-	  				}} 
+	  				componentProps={props} 
+	  				asyncProps={asyncProps != null ? (asyncProps[i--] || {}) : null}
 					/>
 				}
 			} 

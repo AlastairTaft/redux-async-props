@@ -27054,6 +27054,10 @@
 	
 	var _reactRouter = __webpack_require__(404);
 	
+	var _getRouteParams = __webpack_require__(439);
+	
+	var _getRouteParams2 = _interopRequireDefault(_getRouteParams);
+	
 	function _interopRequireDefault(obj) {
 		return obj && obj.__esModule ? obj : { default: obj };
 	}
@@ -27090,12 +27094,17 @@
 				args[_key] = arguments[_key];
 			}
 	
-			return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(AsyncPropsContainer)).call.apply(_Object$getPrototypeO, [this].concat(args))), _this), _this.state = { newProps: {} }, _this.componentWillReceiveProps = function (props) {
-				debugger;
-				if (props.Component == _this.props.Component) return;
+			return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(AsyncPropsContainer)).call.apply(_Object$getPrototypeO, [this].concat(args))), _this), _this.state = { newProps: {} }, _this.componentWillMount = function () {
+				return _this.onComponentLoad(_this.props);
+			}, _this.componentWillReceiveProps = function (props) {
+				return _this.onComponentLoad(props);
+			}, _this.onComponentLoad = function (props) {
 				var Component = props.Component;
 				var componentProps = props.componentProps;
+				var asyncProps = props.asyncProps;
+				// If there is asyncProps don't load needs as this is the initial render
 	
+				if (asyncProps) return;
 				_this.loadNeeds(Component, componentProps);
 			}, _this.loadNeeds = function (Component, componentProps) {
 				if (!Component.needs) return;
@@ -27104,12 +27113,12 @@
 					_this.setState({ newProps: newProps });
 				});
 			}, _this.render = function () {
-				debugger;
 				var _this$props = _this.props;
 				var Component = _this$props.Component;
 				var componentProps = _this$props.componentProps;
+				var asyncProps = _this$props.asyncProps;
 	
-				return _react2.default.createElement(Component, _extends({}, componentProps, _this.state.newProps));
+				return _react2.default.createElement(Component, _extends({}, componentProps, asyncProps, _this.state.newProps));
 			}, _temp), _possibleConstructorReturn(_this, _ret);
 		}
 	
@@ -27123,35 +27132,43 @@
 	var AsyncRouterContext = function (_Component2) {
 		_inherits(AsyncRouterContext, _Component2);
 	
-		function AsyncRouterContext() {
-			var _Object$getPrototypeO2;
-	
-			var _temp2, _this2, _ret2;
-	
+		function AsyncRouterContext(props) {
 			_classCallCheck(this, AsyncRouterContext);
 	
-			for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-				args[_key2] = arguments[_key2];
-			}
+			var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(AsyncRouterContext).call(this, props));
 	
-			return _ret2 = (_temp2 = (_this2 = _possibleConstructorReturn(this, (_Object$getPrototypeO2 = Object.getPrototypeOf(AsyncRouterContext)).call.apply(_Object$getPrototypeO2, [this].concat(args))), _this2), _this2.render = function () {
-				var asyncProps = _this2.props.asyncProps || [];
-				var i = _this2.props.components.length - 1;
-				return _react2.default.createElement(_reactRouter.RouterContext, _extends({}, _this2.props, {
-					createElement: function createElement(Component, props) {
-						debugger;
-						var iAsyncProps = asyncProps[i--] || {};
-						return _react2.default.createElement(AsyncPropsContainer, {
-							Component: Component,
-							componentProps: _extends({}, props, iAsyncProps)
-						});
-					}
-				}));
-			}, _temp2), _possibleConstructorReturn(_this2, _ret2);
+			_initialiseProps.call(_this2);
+	
+			_this2.asyncProps = props.asyncProps;
+			return _this2;
 		}
 	
 		return AsyncRouterContext;
 	}(_react.Component);
+	
+	var _initialiseProps = function _initialiseProps() {
+		var _this3 = this;
+	
+		this.componentDidMount = function () {
+			// Clear out the asyncProps, as we only want these to be used on the
+			// initial render
+			_this3.asyncProps = null;
+		};
+	
+		this.render = function () {
+			var asyncProps = _this3.asyncProps;
+			var i = _this3.props.components.length - 1;
+			return _react2.default.createElement(_reactRouter.RouterContext, _extends({}, _this3.props, {
+				createElement: function createElement(Component, props) {
+					return _react2.default.createElement(AsyncPropsContainer, {
+						Component: Component,
+						componentProps: props,
+						asyncProps: asyncProps != null ? asyncProps[i--] || {} : null
+					});
+				}
+			}));
+		};
+	};
 	
 	;
 	
