@@ -27,9 +27,9 @@ MyComponent.needs = (props, store) =>
 Why do we pass the store in and not the state? This allows more freedom, you can construct the promise in any way shape or form that makes sense for optimal data loading. If you want to return new props to the component just be sure to return
 an object at the end of the promise chain.
 
-Any redux actions you dispatch here will also populate your redux store, which means your could use the `react-redux` `connect` decorator to map your redux state to props on the first render if that's your preferred workflow.
+Any redux actions you dispatch here will also populate your redux store, which means you could use the `react-redux` `connect` decorator to map your redux state to props on the first render if that's your preferred workflow.
 
-You'll need to configure your server and client. See the next steps below, the steps assume you're familiar with how to setup `redux` and `react-router`, if your new to these two packages it might be best to start with their tutorials first.
+You'll need to configure your server and client. See the next steps below, the steps assume you're familiar with how to setup `redux` and `react-router`, if you're new to these two packages it might be best to start with their tutorials first.
 
 ## Configuring the server.
 
@@ -40,28 +40,24 @@ app.get('*', function (req, res, next) {
   match({ routes: routes, location: req.url }, (err, redirect, props) => {
   const store = createStore(reducer, applyMiddleware(callAPIMiddleware))
     fetchNeeds(props, store)
-    // This param contains the fetched props for each route
+    // This param contains the fetched async props for each route
     .then((asyncProps) => {
-      // We can't use the standard RouterContext because it filters out which
-      // props are passed down, only only passes a specific RouterContext
-      // subset. We want to pass on anything we add additionaly, i.e. the 
-      // async props.
       const appHtml = renderToString(
-          // Ensure you wrap in a redux Provider as the AsyncRouterContext 
+          // Ensure you wrap inside a redux Provider as the AsyncRouterContext 
           // depends on having the redux store in the context.
         <Provider store={store}>
-            {/* We need to use the AsyncRouterContext to handle doing
-              * the initial render with the async props. */}
+            {/* We need to use the AsyncRouterContext so it can handle using
+              * the async props on the initial render. */}
           <AsyncRouterContext {...props} asyncProps={asyncProps} />
       </Provider>
       )
       // dump the HTML into a template, lots of ways to do this.
       var html = require("raw!./public/index.html")
       html = html.replace('<!--__APP_HTML__-->', appHtml)
-        // Our initialState is slightly different to the norm, instead of 
-        // being made up of only the redux store, it now also contains
-        // the async props for the initial render (we'll use these on
-        // the client to avoid rendering twice).
+      // Our initialState is slightly different to the norm, instead of being 
+      // made up of only the redux store, it now also contains the async props 
+      // for the initial render (we'll use these on the client to avoid 
+      // rendering twice).
       const initialState = {asyncProps, store: store.getState()}
       html = html.replace('{/*__INITIAL_STATE__*/}', JSON.stringify(initialState))
       res.send(html)
@@ -85,7 +81,7 @@ render((
         {...props} 
         // Pass in the async props that we're hydrating from
         // the server, these are needed so that the initial render
-        // requires no re-renders
+        // only needs to be done once.
         asyncProps={initialState.asyncProps}
       />}
     />
