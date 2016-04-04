@@ -25,7 +25,7 @@ MyComponent.needs = (props, store) =>
 ```
 
 Why do we pass the store in and not the state? This allows more freedom, you can construct the promise in any way shape or form that makes sense for optimal data loading. If you want to return new props to the component just be sure to return
-an. object at the end of the promise chain.
+an object at the end of the promise chain.
 
 Any redux actions you dispatch here will also populate your redux store, which means your could use the `react-redux` `connect` decorator to map your redux state to props on the first render if that's your preferred workflow.
 
