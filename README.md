@@ -104,7 +104,7 @@ server again.
 
 ## Things that have to work
 Your asynchronous actions have to run on both the client and server. 
-If your using `fetch` then the (https://github.com/matthew-andrews/isomorphic-fetch)['isomorphic-fetch'] is a pretty good package for ensuring it works on the server too.
+If your using `fetch` then the `[isomorphic-fetch](https://github.com/matthew-andrews/isomorphic-fetch)` is a pretty good package for ensuring it works on the server too.
 
 ## Usage with react-redux
 It's safe to use with the `connect` decorator as this can just be used as a way
