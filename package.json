@@ -1,6 +1,6 @@
 {
   "name": "redux-async-props",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Load props and state asynchonously with react-router and redux",
   "keywords": "redux, react-router, async, props, connect",
   "main": "lib/index.js",
@@ -8,19 +8,19 @@
     "build": "npm run clean & babel src --out-dir lib",
     "clean": "rimraf lib"
   },
-  "bugs": { 
-  	"url" : "https://github.com/AlastairTaft/redux-async-props/issues",
-		"email" : "alastair@fleep.io"
-	},
-	"author": { 
-		"name" : "Alastair Taft",
-		"email" : "alastair@fleep.io"
-	},
-	"repository" : { 
-		"type" : "git",
-  	"url" : "https://github.com/AlastairTaft/redux-async-props.git"
+  "bugs": {
+    "url": "https://github.com/AlastairTaft/redux-async-props/issues",
+    "email": "alastair@fleep.io"
   },
-	"license": "ISC",
+  "author": {
+    "name": "Alastair Taft",
+    "email": "alastair@fleep.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlastairTaft/redux-async-props.git"
+  },
+  "license": "ISC",
   "dependencies": {
     "react-router": "^2.0.1"
   },
