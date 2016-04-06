@@ -34,7 +34,7 @@ You'll need to configure your server and client. See the next steps below, the s
 ## Configuring the server
 
 ```js
-import { fetchNeeds, AsyncRoutingContext } from 'redux-async-props'
+import { fetchNeeds, AsyncRouterContext } from 'redux-async-props'
 // ...
 app.get('*', function (req, res, next) {
   match({ routes: routes, location: req.url }, (err, redirect, props) => {
