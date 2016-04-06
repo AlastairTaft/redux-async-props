@@ -10,8 +10,7 @@ import routes from './modules/routes.js'
 import { createStore, applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
 import reducer from './reducers'
-import fetchNeeds from './../lib/fetchNeeds.js'
-import AsyncRouterContext from './../lib/AsyncRouterContext.js'
+import { fetchNeeds, AsyncRouterContext } from 'redux-async-props'
 import callAPIMiddleware from './lib/callAPIMiddleware.js'
 
 // Api stuff

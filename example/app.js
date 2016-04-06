@@ -5,7 +5,7 @@ import routes from './modules/routes.js'
 import reducer from './reducers'
 import { createStore, applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
-import AsyncRouterContext from './../lib/AsyncRouterContext.js'
+import { AsyncRouterContext } from 'redux-async-props'
 import callAPIMiddleware from './lib/callAPIMiddleware.js'
 
 const initialState = window.__INITIAL_STATE__
