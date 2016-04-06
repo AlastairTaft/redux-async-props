@@ -6,7 +6,8 @@
   "main": "lib/index.js",
   "scripts": {
     "build": "npm run clean & babel src --out-dir lib",
-    "clean": "rimraf lib"
+    "clean": "rimraf lib",
+    "prepublish": "npm run build"
   },
   "bugs": {
     "url": "https://github.com/AlastairTaft/redux-async-props/issues",
