@@ -1,7 +1,9 @@
 
 export default function fetchNeeds(params, store) {
 
-  var components = params.components
+	// Filter out undefined values, can happen if components are loaded 
+	// asynchonously
+  var components = params.components.filter(c => c)
   var args = Array.prototype.slice.call(arguments)
 
   var needs = []
