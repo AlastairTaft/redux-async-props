@@ -1,3 +1,6 @@
+# ⚠️ Archived
+This repo is not maintained, I would encourage not using it. Ways of doing similar tasks to this have moved on a great deal since this was relevant.
+
 # redux-async-props
 
 A simple way to load props and state asynchonously with react-router and redux.
